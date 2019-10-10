@@ -27,6 +27,7 @@ The goals / steps of this project are the following:
 [image7]: ./output_images/warp5.jpg "Warp Example"
 [image8]: ./output_images/polysearch5.jpg "Poly Search Example"
 [image9]: ./output_images/final5.jpg "Final Example"
+[image10]: ./output_images/windowsearch5.jpg "Window Search Example"
 [video1]: ./project_video_output.mp4 "Video Output"
 
 
@@ -44,7 +45,7 @@ The Camera Calibration is essentially performed as per the intruction in the cou
 
 These distortion corrections were further tested on a home made image for cross-checking the extent of compatibility of the transformation matrix.
 
-****Distorted Example****
+****Distorted Image****
 ![alt text][image3]
 
 ****Distortion Correction****
@@ -53,49 +54,44 @@ These distortion corrections were further tested on a home made image for cross-
 
 ### Color & Gradient Thresholding
 
-The principle thresholding technique used (after many variations and iterations) to generate a binary image were:
+The principle thresholding technique used (after many variations and iterations of threshold values) to generate a binary image were:
 
-* S Channel Gradient from HLS color space
-* 
+* S Channel Gradient from HLS color space || s_thresh=(80, 255)
+* L Thresholding for light intensity filtering || l_thresh=(90,255)
+* Sobel X-Direction gradient thresholding || sx_thresh=(10, 255)
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+****Corrected Image****
+![alt text][image5]
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+****Thresholded Image****
+![alt text][image6]
 
-![alt text][image3]
+### Perspective Transformation
 
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
-
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
-
-This resulted in the following source and destination points:
+On achieving a robust thresholding mechanism, its time to transform the image into a "birds-eye" perspective. The choice for the source and destination points are as follows: 
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| 570, 470      | 320, 1        | 
+| 722, 470      | 920, 1        |
+| 1110, 720     | 920, 720      |
+| 220, 720      | 960, 720      |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+***Perspective Transformed Image
+![alt text][image7]
 
-![alt text][image4]
+### Lane Detection: Slide Window Search
+
+This is where the heavy-math starts to show light. The window search is primarily sectioning of the lane images on detection and creating its progession based on:
+* identified pixels, and recentering of the search Window in its progression.
+* In case of absence of pixels, creating a progression based on the previous window coordinates.
+
+To detect the start point of a search window, it is necessary to first identify the left and right lane sources (in this case: its concentrating primarily on the lower half of the transposed image, since the lane progression is safely assumed to proceed in the vertical direction). The source coordinates are determined on the histogram weight across the image (shape[0] axis). This ensures a good starting point for progressing the search windows, of which the size is determined based on:
+* pre-defined window height based on no. of windows needed vertically to the overall size of the image.
+* pre-defined size of 50 pixels as margins on either side of both left and right lanes.
+
+![alt text][image10]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
