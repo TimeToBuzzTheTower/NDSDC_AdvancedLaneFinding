@@ -1,5 +1,5 @@
 # Advanced Lane Finding Project
-***Vinayak Kamath | 09.Sept.2019***
+***Vinayak Kamath | 09 October 2019***
 
 ---
 
@@ -28,10 +28,11 @@ The goals / steps of this project are the following:
 [image8]: ./output_images/polysearch5.jpg "Poly Search Example"
 [image9]: ./output_images/final5.jpg "Final Example"
 [image10]: ./output_images/windowsearch5.jpg "Window Search Example"
+[image11]: ./Video_ERROR/errorframe.jpg "Video Error Frame"
 [video1]: ./project_video_output.mp4 "Video Output"
 
 
-### Camera Calibration
+## Camera Calibration
 Initially, it is essential to import the necessary modules needed for various filtering and image processing steps further in the project. It also gives a good overview of the modules needed, if done in a consolidated fashion.
 
 The Camera Calibration is essentially performed as per the intruction in the course exercise, using the cv2 Library function of ChessboardCorners. The distortion correction is subsequently performed after finding the transformation matrix between the object and image points. These matrix values are stored in a pickle file for further usage.
@@ -52,7 +53,7 @@ These distortion corrections were further tested on a home made image for cross-
 ![alt text][image4]
 
 
-### Color & Gradient Thresholding
+## Color & Gradient Thresholding
 
 The principle thresholding technique used (after many variations and iterations of threshold values) to generate a binary image were:
 
@@ -81,7 +82,7 @@ On achieving a robust thresholding mechanism, its time to transform the image in
 ****Perspective Transformed Image****
 ![alt text][image7]
 
-### Lane Detection: Slide Window Search
+## Lane Detection: Slide Window Search
 
 This is where the heavy-math starts to show light. The window search is primarily sectioning of the lane images on detection and creating its progession based on:
 * identified pixels, and recentering of the search Window in its progression.
@@ -95,7 +96,7 @@ The arrays of coordinates, both for left and right lanes are used as input param
 
 ![alt text][image10]
 
-### Identify lanes around previously detected lines ###
+## Lane Detection: Identify lanes around previously detected lines ###
 
 Instead of initiating a new search for lane line coordinates with progressive windows, it is more efficient to obtain the next line coordinates for either lanes.
 The polynomial is threby fitted for the coordinates from the previous frame that represents the lane center. The margin are set to similar values as the old search window.
@@ -104,7 +105,7 @@ The polynomial is threby fitted for the coordinates from the previous frame that
 
 ![alt text][image8]
 
-### Transposing the lanes to the original traffic image ###
+## Transposing the lanes to the original traffic image ###
 
 The area of interest, which was previous warped for lane detection is reverse transposed to the original image, including highlighting the lanes. The inverse matrix is determined using the same source and destination image coordinates. The Numpy and cv2 libraries are quite useful for superimposing these entities on the traffic image.
 
@@ -130,14 +131,26 @@ This is done by keeping a log of predicted lanes in an array, which is used for:
 * A deviation exceeding 30% between the predictions and previously obtained lanes initiates a averaging and updating a running mean array between the two lane lines.
 * In case of missing lane pixels on any subsequent frame, the averaging is create the missing lane with reference to the other detected lane. This is because of the high likelyhood, that the missing lane would also be in the same direction as the detected lane, just on the otherside.
 
+## Summary
+The comprehensive code description and various other test image files are found in the Jupyter Notebook, submitted with the project.
 
+[Link to the Jupyter Notebook](./AdvancedLaneFinding_CodeDocumentation.ipynb)
 
 Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
-### Discussion
+## Discussion
+An issue faced during the project was certainly observing failure of lane detection on a warped frame during processing a video file. This is definitely possible in real-life driving conditions, considering road surface changes (colorations) and eroded lane lines which make detection with the static filtering threshold values not possible.
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+An obvious enhancement which could be included in having a adaptive parameter adjustments for the image thresholding based on varying environmental parameters (probably even set through a look up table) such as:
+* Weather conditions through modern navigation systems
+* Double checking for functional safety by cross verification of image recognised with navigational day of HD Maps.
+* Compensation the light intensity filtering through measurement of light disturbances coming through external factors such as sunlight, traffic, shades due to overlaying objects, etc.
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+****Warped Image lane line detection failure****
+![alt text][image11]
+
+***Status submission: 10.10.2019***:
+
+ **The harder Challenge Video would be dealt with at a later stage in time after the course delay has beeen duly compensated before final submission**
