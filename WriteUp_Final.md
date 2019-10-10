@@ -78,7 +78,7 @@ On achieving a robust thresholding mechanism, its time to transform the image in
 | 1110, 720     | 920, 720      |
 | 220, 720      | 960, 720      |
 
-***Perspective Transformed Image
+****Perspective Transformed Image****
 ![alt text][image7]
 
 ### Lane Detection: Slide Window Search
@@ -91,31 +91,48 @@ To detect the start point of a search window, it is necessary to first identify 
 * pre-defined window height based on no. of windows needed vertically to the overall size of the image.
 * pre-defined size of 50 pixels as margins on either side of both left and right lanes.
 
+The arrays of coordinates, both for left and right lanes are used as input parameters for the cv2.Polyfit function to obtain the coefficients of a second order polynomial.
+
 ![alt text][image10]
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+### Identify lanes around previously detected lines ###
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Instead of initiating a new search for lane line coordinates with progressive windows, it is more efficient to obtain the next line coordinates for either lanes.
+The polynomial is threby fitted for the coordinates from the previous frame that represents the lane center. The margin are set to similar values as the old search window.
 
-![alt text][image5]
+****Lane lines around previous lines****
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+![alt text][image8]
 
-I did this in lines # through # in my code in `my_other_file.py`
+### Transposing the lanes to the original traffic image ###
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+The area of interest, which was previous warped for lane detection is reverse transposed to the original image, including highlighting the lanes. The inverse matrix is determined using the same source and destination image coordinates. The Numpy and cv2 libraries are quite useful for superimposing these entities on the traffic image.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
-
-![alt text][image6]
+![alt text][image9]
 
 ---
 
-### Pipeline (video)
+## Pipeline Video ##
+### Sanity Checks and Lane averaging ###
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+Proceeding on to implementing the lane detection process used on traffic images, the algorithm is implemented with a traffic video.
 
-Here's a [link to my video result](./project_video.mp4)
+It is crucial that the video frames are:
+* correctly corrected for distortion
+* thresholded using the principles mentioned above.
+* warped and lanes detected based on detected pixels for either lanes
+* Transposed back from the warped image to the original video frame
+
+A sanity check is necessary to ensure that the frame images have lanes detected and that the polynomial fitted lanes are progessive to previously created lanes from former frames.
+
+This is done by keeping a log of predicted lanes in an array, which is used for:
+* Checking if predictions exist based on polyfitted lines on an array of past good lines. If not, a reset search with reinitialising the window search is initiated.
+* A deviation exceeding 30% between the predictions and previously obtained lanes initiates a averaging and updating a running mean array between the two lane lines.
+* In case of missing lane pixels on any subsequent frame, the averaging is create the missing lane with reference to the other detected lane. This is because of the high likelyhood, that the missing lane would also be in the same direction as the detected lane, just on the otherside.
+
+
+
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
